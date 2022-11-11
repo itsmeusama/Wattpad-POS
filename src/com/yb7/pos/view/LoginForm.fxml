@@ -17,7 +17,7 @@
          <children>
             <AnchorPane layoutX="77.0" layoutY="58.0" prefHeight="456.0" prefWidth="436.0" style="-fx-background-color: #F5F5F5;">
                <children>
-                  <ImageView fitHeight="57.0" fitWidth="181.0" layoutX="123.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="57.0" fitWidth="181.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../asserts/logo.png" />
                      </image>
@@ -55,7 +55,7 @@
                <children>
                   <ImageView fitHeight="456.0" fitWidth="436.0" pickOnBounds="true">
                      <image>
-                        <Image url="@../../../../../../../../../../Downloads/login-bg.png" />
+                        <Image url="@../asserts/login-bg.png" />
                      </image>
                   </ImageView>
                   <Label layoutX="281.0" layoutY="9.0" text="New Update is Available ">
