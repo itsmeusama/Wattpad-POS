@@ -5,8 +5,13 @@ import com.jfoenix.controls.JFXTextField;
 import com.yb7.pos.db.Database;
 import com.yb7.pos.model.User;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class SignUpFormController {
     public JFXPasswordField txtRePassword;
@@ -16,10 +21,11 @@ public class SignUpFormController {
     public JFXTextField txtContact;
     public JFXPasswordField txtPassword;
 
-    public void alreadyHaveAnAccountOnAction(ActionEvent actionEvent) {
+    public void alreadyHaveAnAccountOnAction(ActionEvent actionEvent) throws IOException {
+        setUi("LoginForm","Login Form");
     }
 
-    public void signUpOnAction(ActionEvent actionEvent) {
+    public void signUpOnAction(ActionEvent actionEvent) throws InterruptedException, IOException {
 
         String realPwd = txtPassword.getText().trim();
         String matchPwd = txtRePassword.getText().trim();
@@ -33,9 +39,13 @@ public class SignUpFormController {
         if(saveUser(u)){
             new Alert(Alert.AlertType.CONFIRMATION, "User Registered").show();
             clearFields();
+            Thread.sleep(2000);
+            //setUi("LoginForm");
+           // setUi("DashBoardForm",u.getEmail());
+
         }
         else{
-            new Alert(Alert.AlertType.WARNING,"Try Again").show();
+            new Alert(Alert.AlertType.WARNING,"Already Exist!, Try Again").show();
         }
     }
 
@@ -44,7 +54,20 @@ public class SignUpFormController {
     }
 
     private boolean saveUser(User u){
+        for(User tempUser:Database.userTable){
+            if(tempUser.getEmail().equals(u.getEmail())){
+                return false;
+            }
+        }
         return Database.userTable.add(u);
 
+    }
+
+    private void setUi(String location, String title) throws IOException {
+        Stage window = (Stage) signupFormContext.getScene().getWindow();
+        window.setTitle(title);
+        window.setScene(
+                new Scene(FXMLLoader.load(getClass().getResource("../view/"+location+".fxml")))
+        );
     }
 }
