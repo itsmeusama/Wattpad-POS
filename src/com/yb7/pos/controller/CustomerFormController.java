@@ -4,7 +4,6 @@ import com.jfoenix.controls.JFXButton;
 import com.yb7.pos.db.Database;
 import com.yb7.pos.model.Customer;
 import com.yb7.pos.view.tm.CustomerTM;
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class CustomerFormController {
     public AnchorPane customerFormContext;
@@ -41,6 +41,28 @@ public class CustomerFormController {
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         colSalary.setCellValueFactory(new PropertyValueFactory<>("salary"));
         colOption.setCellValueFactory(new PropertyValueFactory<>("btn"));
+
+        /////////////////// Listeners ///////////////////////
+        tblCustomer.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    if(null!=newValue){
+                        setCustomerData(newValue);
+                    }
+                });
+
+
+        /////////////////// Listeners ///////////////////////
+
+    }
+    private void setCustomerData(CustomerTM tm){
+        txtId.setText(tm.getId());
+        txtName.setText(tm.getName());
+        txtAddress.setText(tm.getAddress());
+        txtSalary.setText(String.valueOf(tm.getSalary()));
+
+        btnSaveUpdate.setText("Update Customer");
+
     }
 
     public void backToHomeOnAction(ActionEvent actionEvent) throws IOException {
@@ -48,6 +70,7 @@ public class CustomerFormController {
     }
 
     public void newCustomerOnAction(ActionEvent actionEvent) {
+        clear();
     }
 
     public void saveUpdateOnAction(ActionEvent actionEvent) {
@@ -58,17 +81,43 @@ public class CustomerFormController {
                 Double.parseDouble(txtSalary.getText())
         );
 
-        if(Database.customerTable.add(customer)){
-            new Alert(Alert.AlertType.CONFIRMATION,"Customer Saved").show();
-            setTableDate();
-            setCustomerId();
+        if(btnSaveUpdate.getText().equalsIgnoreCase("Save Customer")){
+            //Save
+            if(Database.customerTable.add(customer)){
+                new Alert(Alert.AlertType.CONFIRMATION,"Customer Saved").show();
+                setTableDate();
+                setCustomerId();
+                clear();
+            }
+            else{
+                new Alert(Alert.AlertType.WARNING,"Try Again").show();
+            }
         }
-        else{
-            new Alert(Alert.AlertType.WARNING,"Try Again").show();
+        else
+        {
+            for(Customer c: Database.customerTable){
+                if(txtId.getText().equalsIgnoreCase(c.getId())){
+                    c.setName(txtName.getText());
+                    c.setAddress(txtAddress.getText());
+                    c.setSalary(Double.parseDouble(txtSalary.getText()));
+                    new Alert(Alert.AlertType.CONFIRMATION,"Customer Updated").show();
+                    setTableDate();
+                    clear();
+                }
+
+            }
         }
     }
 
+    private void clear(){
+        btnSaveUpdate.setText("Save Customer");
 
+        txtName.clear();
+        txtAddress.clear();
+        txtSalary.clear();
+        setCustomerId();
+
+    }
 
     private void setUi(String location, String title) throws IOException {
         Stage window = (Stage) customerFormContext.getScene().getWindow();
@@ -85,6 +134,20 @@ public class CustomerFormController {
             Button btn = new Button("Delete");
             CustomerTM tm = new CustomerTM(c.getId(),c.getName(),c.getAddress(),c.getSalary(),btn);
             obList.add(tm);
+
+            btn.setOnAction(e->{
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                        "Are you Sure?",ButtonType.YES, ButtonType.NO);
+                Optional<ButtonType> val = alert.showAndWait();
+                if(val.get()==ButtonType.YES)
+                {
+                    Database.customerTable.remove(c);
+                    new Alert(Alert.AlertType.CONFIRMATION,"Customer Removed").show();
+                    setTableDate();
+                }
+            });
+
+
         }
         tblCustomer.setItems(obList);
 
