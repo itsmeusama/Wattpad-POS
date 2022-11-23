@@ -32,9 +32,10 @@ public class CustomerFormController {
     public TableColumn colAddress;
     public TableColumn colSalary;
     public TableColumn colOption;
+    private String searchText="";
 
     public void initialize(){
-        setTableDate();
+        setTableData(searchText);
         setCustomerId();
         colCustomerId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colCustomerName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -51,7 +52,10 @@ public class CustomerFormController {
                     }
                 });
 
-
+            txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
+                searchText = newValue;
+                setTableData(searchText);
+        });
         /////////////////// Listeners ///////////////////////
 
     }
@@ -85,7 +89,7 @@ public class CustomerFormController {
             //Save
             if(Database.customerTable.add(customer)){
                 new Alert(Alert.AlertType.CONFIRMATION,"Customer Saved").show();
-                setTableDate();
+                setTableData(searchText);
                 setCustomerId();
                 clear();
             }
@@ -101,7 +105,7 @@ public class CustomerFormController {
                     c.setAddress(txtAddress.getText());
                     c.setSalary(Double.parseDouble(txtSalary.getText()));
                     new Alert(Alert.AlertType.CONFIRMATION,"Customer Updated").show();
-                    setTableDate();
+                    setTableData(searchText);
                     clear();
                 }
 
@@ -127,25 +131,30 @@ public class CustomerFormController {
         );
     }
 
-    private void setTableDate(){
+    private void setTableData(String text){
+        text = text.toLowerCase();
         ArrayList<Customer> customerList = Database.customerTable;
         ObservableList<CustomerTM> obList = FXCollections.observableArrayList();
         for(Customer c: customerList){
-            Button btn = new Button("Delete");
-            CustomerTM tm = new CustomerTM(c.getId(),c.getName(),c.getAddress(),c.getSalary(),btn);
-            obList.add(tm);
 
-            btn.setOnAction(e->{
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Are you Sure?",ButtonType.YES, ButtonType.NO);
-                Optional<ButtonType> val = alert.showAndWait();
-                if(val.get()==ButtonType.YES)
-                {
-                    Database.customerTable.remove(c);
-                    new Alert(Alert.AlertType.CONFIRMATION,"Customer Removed").show();
-                    setTableDate();
-                }
-            });
+            if(c.getName().toLowerCase().contains(text) || c.getAddress().toLowerCase().contains(text)){
+                Button btn = new Button("Delete");
+                CustomerTM tm = new CustomerTM(c.getId(),c.getName(),c.getAddress(),c.getSalary(),btn);
+                obList.add(tm);
+
+                btn.setOnAction(e->{
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Are you Sure?",ButtonType.YES, ButtonType.NO);
+                    Optional<ButtonType> val = alert.showAndWait();
+                    if(val.get()==ButtonType.YES)
+                    {
+                        Database.customerTable.remove(c);
+                        new Alert(Alert.AlertType.CONFIRMATION,"Customer Removed").show();
+                        setTableData(searchText);
+                    }
+                });
+            }
+
 
 
         }
